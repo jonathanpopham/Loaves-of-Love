@@ -54,11 +54,11 @@ project creation. For the initial setup, create the Supabase project manually:
 
 ## Variables
 
-| Variable | Description |
-|---|---|
-| `vercel_api_token` | Vercel API token (Settings → Tokens) |
-| `vercel_team_id` | Team ID; empty for personal accounts |
-| `supabase_url` | `https://<ref>.supabase.co` |
-| `supabase_anon_key` | Public anon key from Supabase dashboard |
-| `supabase_service_role_key` | Service-role key (keep secret!) |
-| `resend_api_key` | Resend API key for transactional email |
+| Variable                    | Description                             |
+| --------------------------- | --------------------------------------- |
+| `vercel_api_token`          | Vercel API token (Settings → Tokens)    |
+| `vercel_team_id`            | Team ID; empty for personal accounts    |
+| `supabase_url`              | `https://<ref>.supabase.co`             |
+| `supabase_anon_key`         | Public anon key from Supabase dashboard |
+| `supabase_service_role_key` | Service-role key (keep secret!)         |
+| `resend_api_key`            | Resend API key for transactional email  |

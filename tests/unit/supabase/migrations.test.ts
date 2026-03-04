@@ -158,9 +158,7 @@ describe('Migration: 20260304000001_rls_policies.sql', () => {
       'notification_preferences',
     ]
     for (const table of tables) {
-      expect(sql).toMatch(
-        new RegExp(`alter table public\\.${table} enable row level security`),
-      )
+      expect(sql).toMatch(new RegExp(`alter table public\\.${table} enable row level security`))
     }
   })
 
@@ -220,7 +218,7 @@ describe('Migration: 20260304000002_seed_data.sql', () => {
     expect(sql).toMatch(/30,\s*24,\s*8/)
   })
 
-  it('seeds Brother Charlie\'s reserve label for loaves', () => {
+  it("seeds Brother Charlie's reserve label for loaves", () => {
     expect(sql).toMatch(/Brother Charlie/)
   })
 

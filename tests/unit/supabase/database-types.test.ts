@@ -62,12 +62,7 @@ describe('Enum types', () => {
   })
 
   it('CommentParentType includes all parent types', () => {
-    const types: CommentParentType[] = [
-      'inventory_item',
-      'recipe',
-      'assignment',
-      'announcement',
-    ]
+    const types: CommentParentType[] = ['inventory_item', 'recipe', 'assignment', 'announcement']
     expect(types).toHaveLength(4)
   })
 })
