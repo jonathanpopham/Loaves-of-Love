@@ -6,6 +6,8 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
 
 # next.js
 /.next/
@@ -34,7 +36,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# temp scripts
-setup-images.js
-optimize-images.js
-download-labels.js
+# terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars

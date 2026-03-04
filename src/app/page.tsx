@@ -1,19 +1,14 @@
-import GallerySection from "@/components/GallerySection";
+import GallerySection from '@/components/GallerySection'
 
 export default function Home() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <section className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-lol-red mb-4">
-          Loaves of Love
-        </h1>
-        <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-          A baking ministry at St. Anne&apos;s Episcopal Church in Tifton,
-          Georgia — sharing homemade bread and God&apos;s love with those in
-          need.
-        </p>
-      </section>
+    <div className="text-center py-12">
+      <h1 className="text-4xl font-bold text-lol-red mb-4">Loaves of Love</h1>
+      <p className="text-xl text-gray-600 mb-2">
+        St. Anne&apos;s Episcopal Church — Tifton, Georgia
+      </p>
+      <p className="text-gray-500 mb-12">Ministry coordination platform</p>
       <GallerySection />
     </div>
-  );
+  )
 }
