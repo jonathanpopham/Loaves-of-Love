@@ -28,7 +28,7 @@ async function supabaseRequest(
     serviceRole?: boolean
     body?: unknown
     prefer?: string
-  } = {},
+  } = {}
 ) {
   const key = options.serviceRole ? SUPABASE_SERVICE_KEY! : (options.token ?? SUPABASE_ANON_KEY!)
   const headers: Record<string, string> = {
@@ -101,7 +101,7 @@ test.describe('RLS: inventory threshold seed data', () => {
       request as never,
       'GET',
       'inventory_thresholds?select=*&category=eq.loaves',
-      { serviceRole: true },
+      { serviceRole: true }
     )
     expect(res.status()).toBe(200)
     const body = await res.json()
@@ -117,7 +117,7 @@ test.describe('RLS: inventory threshold seed data', () => {
       request as never,
       'GET',
       'inventory_thresholds?select=category',
-      { serviceRole: true },
+      { serviceRole: true }
     )
     expect(res.status()).toBe(200)
     const body = await res.json()
@@ -148,7 +148,7 @@ test.describe('RLS: baker cannot modify thresholds', () => {
       {
         body: { green_threshold: 999 },
         prefer: 'return=representation',
-      },
+      }
     )
     // Should be rejected: 401 unauthorized or 0 rows updated
     if (res.status() === 200) {

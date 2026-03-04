@@ -74,6 +74,7 @@ npx playwright test  # Run integration tests
 ## Testing Requirements
 
 Every PR must include:
+
 - **Unit tests** (Jest or Vitest) for business logic, API routes, and utilities
 - **Integration tests** (Playwright) for user-facing flows
 - All tests must pass before the PR is submitted

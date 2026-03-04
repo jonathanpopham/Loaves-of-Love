@@ -11,9 +11,19 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 // ─── Enum types ──────────────────────────────────────────────
 
 export type UserRole = 'admin' | 'baker'
-export type InventoryCategory = 'loaves' | 'cookies' | 'coffee_cakes' | 'emergency_bags' | 'bake_sale'
+export type InventoryCategory =
+  | 'loaves'
+  | 'cookies'
+  | 'coffee_cakes'
+  | 'emergency_bags'
+  | 'bake_sale'
 export type AssignmentStatus = 'open' | 'in_progress' | 'completed'
-export type DeliveryDestination = 'ruths_cottage' | 'brother_charlies' | 'bake_sale' | 'individual' | 'other'
+export type DeliveryDestination =
+  | 'ruths_cottage'
+  | 'brother_charlies'
+  | 'bake_sale'
+  | 'individual'
+  | 'other'
 export type CommentParentType = 'inventory_item' | 'recipe' | 'assignment' | 'announcement'
 
 // ─── Table row types ─────────────────────────────────────────

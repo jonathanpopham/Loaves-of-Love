@@ -7,14 +7,11 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Loaves of Love',
-  description: "Coordination platform for the Loaves of Love Ministry at St. Anne's Episcopal Church",
+  description:
+    "Coordination platform for the Loaves of Love Ministry at St. Anne's Episcopal Church",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
