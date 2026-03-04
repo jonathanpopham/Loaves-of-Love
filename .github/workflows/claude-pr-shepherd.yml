@@ -1,0 +1,83 @@
+name: Claude PR Shepherd
+
+on:
+  schedule:
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: claude-pr-shepherd
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  shepherd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Claude PR Shepherd
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GH_WORKFLOW_TOKEN }}
+          allowed_bots: "claude[bot],github-actions[bot]"
+          claude_args: '--allowedTools "Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr checks:*),Bash(gh pr merge:*),Bash(gh pr comment:*),Bash(gh pr review:*),Bash(gh api repos/*/*/pulls/*/reviews:*),Bash(gh api repos/*/*/issues/*/comments:*)"'
+          prompt: |
+            You are a PR shepherd for the repo ${{ github.repository }}.
+
+            List all open, non-draft PRs:
+              gh pr list --repo ${{ github.repository }} --state open --limit 100 --json number,title,isDraft,mergeable,labels
+
+            For each non-draft PR:
+            0. Label guard: Before any other action, inspect the labels array returned by the listing command above.
+               If none of the label objects in the labels array has name equal to "claude-task", skip ALL remaining steps for this PR immediately — do not post any comments, do not check CI, do not check conflicts, do not request reviews, do not attempt to merge. Move on to the next PR.
+            1. Check CI: Run gh pr checks <number> --repo ${{ github.repository }} and evaluate the output carefully before proceeding:
+               - If the output is empty (no checks listed), CI has not started yet → SKIP this PR entirely, do not merge
+               - If any check shows a status of "PENDING", "IN_PROGRESS", or "QUEUED", CI is still running → SKIP this PR entirely
+               - If any check shows a status of "FAILURE", "CANCELLED", "TIMED_OUT", or "ACTION_REQUIRED", CI has failed → do NOT merge; instead apply timestamp-aware de-dup:
+                 Get the timestamp of the most recent "CI checks are failing" comment:
+                   Run: gh api repos/${{ github.repository }}/issues/<number>/comments --jq '[.[] | select(.body | contains("CI checks are failing"))] | max_by(.created_at) | .created_at'
+                 Get the timestamp of the most recent commit to this PR:
+                   Run: gh pr view <number> --repo ${{ github.repository }} --json commits --jq '.commits[-1].committedDate'
+                 If the most recent "CI checks are failing" comment timestamp is non-empty AND is more recent than (or equal to) the last commit timestamp, skip to the next PR without posting.
+                 Otherwise, extract the failing check names and post a comment:
+                   failing_checks=$(gh pr checks <number> --repo ${{ github.repository }} --json name,state --jq '[.[] | select(.state == "FAILURE" or .state == "CANCELLED" or .state == "TIMED_OUT" or .state == "ACTION_REQUIRED") | "- \(.name) (\(.state))"] | join("\n")')
+                   printf '@claude CI checks are failing on this PR. Failing checks:\n%s\nPlease review the failed checks and push a fix.' "${failing_checks}" > /tmp/ci_failure_body.txt
+                   gh pr comment <number> --repo ${{ github.repository }} --body-file /tmp/ci_failure_body.txt
+               - Checks with status "SKIPPED" or "NEUTRAL" are non-blocking
+               - CI passes when: at least one check is present, no failures, and every non-skipped check shows "SUCCESS"
+            2. Check review status: gh pr view <number> --repo ${{ github.repository }} --json reviewDecision,mergeable
+            3. If mergeable is false (merge conflicts exist), apply timestamp-aware de-dup:
+               Get the timestamp of the most recent "merge conflicts" comment:
+                 Run: gh api repos/${{ github.repository }}/issues/<number>/comments --jq '[.[] | select(.body | contains("merge conflicts"))] | max_by(.created_at) | .created_at'
+               Get the timestamp of the most recent commit:
+                 Run: gh pr view <number> --repo ${{ github.repository }} --json commits --jq '.commits[-1].committedDate'
+               If already notified for this push, skip. Otherwise post:
+               gh pr comment <number> --repo ${{ github.repository }} --body "@claude this PR has merge conflicts. Please rebase onto main and push an update."
+            4. Pre-checks before attempting merge:
+               - If mergeable is null: skip silently
+               - If CI is not passing: skip
+               - If reviewDecision is not APPROVED: skip
+               - If no "claude-task" label: skip
+               - Stale approval check: verify most recent APPROVED review was submitted after the latest commit
+               If all pre-checks pass, merge:
+               merge_output=$(gh pr merge <number> --repo ${{ github.repository }} --rebase --delete-branch 2>&1); merge_exit=$?
+               If merge fails, apply de-dup and post error comment.
+            5. If reviewDecision is CHANGES_REQUESTED, check staleness before posting:
+               If the CHANGES_REQUESTED review timestamp is older than the latest commit, skip (Claude already pushed a fix).
+               Otherwise post: gh pr comment <number> --repo ${{ github.repository }} --body "@claude please address the review feedback and push an update"
+            6. If reviewDecision is null or REVIEW_REQUIRED:
+               a. Get last commit timestamp
+               b. If commit is older than 2 hours:
+                  - Check if "please review this PR" comment already posted after latest commit
+                  - If already posted, check if claude-code-review check failed — if so, post again
+                  - Otherwise skip
+                  - If not posted, trigger: gh pr comment <number> --repo ${{ github.repository }} --body "@claude please review this PR and submit a formal review decision (APPROVE or REQUEST_CHANGES)."
+               c. If commit is less than 2 hours old, skip and wait.
+
+            Use --repo ${{ github.repository }} on every gh command.

@@ -1,0 +1,52 @@
+name: Claude Auto-Assign
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check authorization and trigger Claude
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Check if issue contains @claude in body or title
+          if ! echo "$ISSUE_BODY$ISSUE_TITLE" | grep -q "@claude"; then
+            echo "Issue does not mention @claude, skipping"
+            exit 0
+          fi
+
+          # Authorization check
+          ALLOWED_USERS="jonathanpopham"
+          ALLOWED_BOTS="github-actions[bot] claude[bot]"
+
+          if echo "$ALLOWED_USERS" | grep -qw "$ISSUE_AUTHOR" || \
+             echo " $ALLOWED_BOTS " | grep -qF " $ISSUE_AUTHOR "; then
+            AUTHORIZED=true
+          else
+            AUTHORIZED=false
+          fi
+
+          if [ "$AUTHORIZED" = "true" ]; then
+            gh issue comment $ISSUE_NUMBER --repo $REPO \
+              --body "@claude please implement issue #${ISSUE_NUMBER}. When you create a PR, include Closes #${ISSUE_NUMBER} in the PR body so the issue auto-closes on merge."
+
+            gh label create claude-task \
+              --repo "$REPO" \
+              --description "Assigned to Claude for implementation" \
+              --color "7057ff" 2>/dev/null || true
+            gh issue edit $ISSUE_NUMBER --repo $REPO --add-label claude-task
+          else
+            echo "User $ISSUE_AUTHOR not authorized, skipping"
+          fi
