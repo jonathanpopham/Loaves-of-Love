@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import type { InventoryItem } from '@/types/database'
 import { CATEGORY_LABELS, getFreshnessStatus, FRESHNESS_COLORS } from '@/lib/inventory'
 import { useProfile } from '@/lib/hooks/use-profile'
+import CommentSection from '@/components/CommentSection'
 
 export default function InventoryDetailPage() {
   const router = useRouter()
@@ -125,6 +126,10 @@ export default function InventoryDetailPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg p-6">
+        <CommentSection parentType="inventory_item" parentId={id} />
       </div>
 
       <button
