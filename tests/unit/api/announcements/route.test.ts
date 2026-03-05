@@ -135,8 +135,6 @@ describe('POST /api/announcements', () => {
     const body = await res.json()
 
     expect(res.status).toBe(201)
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ pinned: true })
-    )
+    expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ pinned: true }))
   })
 })
