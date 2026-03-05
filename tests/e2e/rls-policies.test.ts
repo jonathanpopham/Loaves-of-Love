@@ -20,7 +20,8 @@ const hasLocalSupabase = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_S
 // ─── Helpers ─────────────────────────────────────────────────
 
 async function supabaseRequest(
-  request: Parameters<typeof test>[1] extends (args: { request: infer R }) => unknown ? R : never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  request: any,
   method: string,
   path: string,
   options: {
