@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useProfile } from '@/lib/hooks/use-profile'
+import CommentSection from '@/components/CommentSection'
 
 interface RecipeDetail {
   id: string
@@ -89,6 +90,10 @@ export default function RecipeDetailPage() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="bg-white shadow rounded-lg p-6">
+        <CommentSection parentType="recipe" parentId={id} />
       </div>
 
       <button
